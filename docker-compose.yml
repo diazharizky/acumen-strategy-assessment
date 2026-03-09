@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mock_server:
+    build:
+      context: ./mock-server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5000:5000"
+
+  pipeline_service:
+    build:
+      context: ./pipeline-service
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      mock_server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
