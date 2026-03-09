@@ -64,10 +64,6 @@ logs/
 *.sqlite
 *.sqlite3
 
-# Docker
-.dockerignore
-docker-compose.override.yml
-
 # Package manager locks (optional - uncomment if desired)
 # poetry.lock
 # Pipfile.lock
